@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+command:
+  policy:
+    allowed-executables:
+      - /usr/bin/ls
+      - /usr/bin/grep
+      - /usr/bin/echo
+    allowed-shells:
+      - /bin/bash
+      - /bin/sh
+    allowed-shell-commands:
+      - /usr/bin/ls
+      - /usr/bin/echo
+    denied-tokens:
+      - ";"
+      - "&&"
+      - "||"
+      - "|"
+      - ">"
+      - "<"
+    allow-shell-execution: false
+    allow-sudo: false

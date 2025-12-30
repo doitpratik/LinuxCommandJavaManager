@@ -16,17 +16,27 @@ public class CommandValidator {
   }
 
   public void validate(ExecutionRequest request) {
-    ensureAllowlistConfigured();
-    requireAllowedExecutable(request.getExecutable());
+    if (request.getCommandMode() == null) {
+      request.setCommandMode(com.example.commandmanager.model.CommandMode.EXECUTABLE);
+    }
+    if (request.getCommandMode() == com.example.commandmanager.model.CommandMode.EXECUTABLE) {
+      ensureAllowlistConfigured();
+      requireAllowedExecutable(request.getExecutable());
+      validateNoDeniedTokens(request.getExecutable());
+      validateNoDeniedTokens(request.getArgs());
+      validateNoDeniedTokens(request.getParameters());
+    } else {
+      requireShellExecutionEnabled();
+      requireAllowedShellCommand(request.getRawCommand());
+      validateNoDeniedTokens(request.getRawCommand());
+    }
+
     if (request.getShell() != null) {
       requireShellAllowed(request.getShell());
     }
     if (request.getSudoUser() != null && !policy.isAllowSudo()) {
       throw new IllegalArgumentException("Sudo execution is disabled by policy");
     }
-    validateNoDeniedTokens(request.getExecutable());
-    validateNoDeniedTokens(request.getArgs());
-    validateNoDeniedTokens(request.getParameters());
     validateNoDeniedTokens(request.getEnvironment());
     if (request.getEnvSetupExecutable() != null && !policy.isAllowShellExecution()) {
       throw new IllegalArgumentException("Env setup executable requires shell execution to be enabled");
@@ -51,6 +61,25 @@ public class CommandValidator {
     }
     if (!policy.getAllowedShells().contains(shell)) {
       throw new IllegalArgumentException("Shell is not allowed by policy: " + shell);
+    }
+  }
+
+  private void requireShellExecutionEnabled() {
+    if (!policy.isAllowShellExecution()) {
+      throw new IllegalArgumentException("Shell execution is disabled by policy");
+    }
+  }
+
+  private void requireAllowedShellCommand(String rawCommand) {
+    if (rawCommand == null || rawCommand.isBlank()) {
+      throw new IllegalArgumentException("Raw command must be provided for shell execution");
+    }
+    if (policy.getAllowedShellCommands() == null || policy.getAllowedShellCommands().isEmpty()) {
+      throw new IllegalArgumentException("No allowed shell commands configured. Set command.policy.allowed-shell-commands.");
+    }
+    boolean allowed = policy.getAllowedShellCommands().stream().anyMatch(rawCommand::startsWith);
+    if (!allowed) {
+      throw new IllegalArgumentException("Shell command is not allowed by policy");
     }
   }
 

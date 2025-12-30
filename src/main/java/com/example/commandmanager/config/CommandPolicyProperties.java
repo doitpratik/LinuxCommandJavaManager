@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class CommandPolicyProperties {
   private List<String> allowedExecutables = new ArrayList<>();
   private List<String> allowedShells = List.of("/bin/bash", "/bin/sh");
+  private List<String> allowedShellCommands = new ArrayList<>();
   private List<String> deniedTokens = List.of(";", "&&", "||", "|", ">", "<");
   private boolean allowShellExecution = false;
   private boolean allowSudo = false;
@@ -26,6 +27,14 @@ public class CommandPolicyProperties {
 
   public void setAllowedShells(List<String> allowedShells) {
     this.allowedShells = allowedShells;
+  }
+
+  public List<String> getAllowedShellCommands() {
+    return allowedShellCommands;
+  }
+
+  public void setAllowedShellCommands(List<String> allowedShellCommands) {
+    this.allowedShellCommands = allowedShellCommands;
   }
 
   public List<String> getDeniedTokens() {

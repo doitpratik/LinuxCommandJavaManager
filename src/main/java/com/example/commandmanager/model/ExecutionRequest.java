@@ -10,18 +10,29 @@ import java.util.List;
 import java.util.Map;
 
 public class ExecutionRequest {
+  private CommandMode commandMode = CommandMode.EXECUTABLE;
   @NotBlank
   private String executable;
+  private String rawCommand;
   private List<String> args = new ArrayList<>();
   private Map<String, String> parameters = new HashMap<>();
   private Map<String, String> environment = new HashMap<>();
   private String sudoUser;
   private String shell;
   private String envSetupExecutable;
+  private String workingDirectory;
   private Duration timeout = Duration.ofSeconds(30);
   @NotNull
   @Valid
   private RuleContext ruleContext = new RuleContext();
+
+  public CommandMode getCommandMode() {
+    return commandMode;
+  }
+
+  public void setCommandMode(CommandMode commandMode) {
+    this.commandMode = commandMode;
+  }
 
   public String getExecutable() {
     return executable;
@@ -29,6 +40,14 @@ public class ExecutionRequest {
 
   public void setExecutable(String executable) {
     this.executable = executable;
+  }
+
+  public String getRawCommand() {
+    return rawCommand;
+  }
+
+  public void setRawCommand(String rawCommand) {
+    this.rawCommand = rawCommand;
   }
 
   public List<String> getArgs() {
@@ -77,6 +96,14 @@ public class ExecutionRequest {
 
   public void setEnvSetupExecutable(String envSetupExecutable) {
     this.envSetupExecutable = envSetupExecutable;
+  }
+
+  public String getWorkingDirectory() {
+    return workingDirectory;
+  }
+
+  public void setWorkingDirectory(String workingDirectory) {
+    this.workingDirectory = workingDirectory;
   }
 
   public Duration getTimeout() {

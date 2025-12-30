@@ -10,6 +10,9 @@ command:
     allowed-shells:
       - /bin/bash
       - /bin/sh
+    allowed-shell-commands:
+      - /usr/bin/ls
+      - /usr/bin/echo
     denied-tokens:
       - ";"
       - "&&"

@@ -29,6 +29,10 @@ public class CommandExecutionService {
   public ExecutionResponse execute(ExecutionRequest request) {
     validator.validate(request);
     ExecutionRequest resolved = resolveParameters(request);
+    if (resolved.getCommandMode() == com.example.commandmanager.model.CommandMode.SHELL_COMMAND) {
+      String rawCommand = resolver.resolveValue(resolved.getRawCommand(), resolved.getRuleContext());
+      return runShellCommand(rawCommand, resolved);
+    }
     List<String> command = buildCommand(resolved);
     return runCommand(command, resolved);
   }
@@ -61,6 +65,15 @@ public class CommandExecutionService {
     return command;
   }
 
+  private ExecutionResponse runShellCommand(String rawCommand, ExecutionRequest request) {
+    String shell = request.getShell() == null ? policy.getAllowedShells().get(0) : request.getShell();
+    String commandString = rawCommand;
+    if (request.getEnvSetupExecutable() != null) {
+      commandString = "source " + request.getEnvSetupExecutable() + " && " + commandString;
+    }
+    return runCommand(List.of(shell, "-lc", commandString), request);
+  }
+
   private ExecutionResponse runCommand(List<String> command, ExecutionRequest request) {
     List<String> processCommand = command;
     if (request.getShell() != null || request.getEnvSetupExecutable() != null) {
@@ -78,6 +91,9 @@ public class CommandExecutionService {
     ProcessBuilder builder = new ProcessBuilder(processCommand);
     builder.redirectErrorStream(false);
     builder.environment().putAll(request.getEnvironment());
+    if (request.getWorkingDirectory() != null && !request.getWorkingDirectory().isBlank()) {
+      builder.directory(new java.io.File(request.getWorkingDirectory()));
+    }
 
     Instant start = Instant.now();
     try {
